@@ -162,7 +162,7 @@ if __name__ == '__main__':
 
     for workout_type, data in packages:
         training: Optional[Training] = read_package(workout_type, data)
-        
+
         if training:
             main(training)
         else:
