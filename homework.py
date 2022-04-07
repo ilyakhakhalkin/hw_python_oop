@@ -1,9 +1,8 @@
-
 from dataclasses import dataclass
 from typing import Dict, Type, Optional
 
 
-@dataclass
+@dataclass(init=True, repr=False, eq=False)
 class InfoMessage:
     """Информационное сообщение о тренировке."""
     training_type: str
@@ -13,18 +12,20 @@ class InfoMessage:
     calories: float
 
     def get_message(self) -> str:
-        return (f'Тип тренировки: {self.training_type}; '
-                f'Длительность: {"%.3f" % self.duration} ч.; '
-                f'Дистанция: {"%.3f" % self.distance} км; '
-                f'Ср. скорость: {"%.3f" % self.speed} км/ч; '
-                f'Потрачено ккал: {"%.3f" % self.calories}.')
+        msg: str = (f'Тип тренировки: {self.training_type}; '
+                    f'Длительность: {"%.3f" % self.duration} ч.; '
+                    f'Дистанция: {"%.3f" % self.distance} км; '
+                    f'Ср. скорость: {"%.3f" % self.speed} км/ч; '
+                    f'Потрачено ккал: {"%.3f" % self.calories}.')
+
+        return msg
 
 
 class Training:
     """Базовый класс тренировки."""
 
     M_IN_KM: int = 1000
-    MIN_IN_HOUR = 60
+    MIN_IN_HOUR: float = 60
     LEN_STEP: float = 0.65
 
     def __init__(self,
@@ -49,8 +50,7 @@ class Training:
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
         raise NotImplementedError(
-            'Определите get_spent_calories в %s.'
-            % (self.__class__.__name__))
+            f'Определите get_spent_calories в {self.__class__.__name__}')
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
@@ -138,11 +138,11 @@ def read_package(workout_type: str, data: list) -> Optional[Training]:
         'WLK': SportsWalking
     }
 
-    if trainings.get(workout_type):
-        return trainings[workout_type](*data)
-    else:
+    if trainings.get(workout_type) is None:
         print(f'Unknown training: {workout_type}')
         return None
+
+    return trainings[workout_type](*data)
 
 
 def main(training: Training) -> None:
@@ -154,7 +154,6 @@ def main(training: Training) -> None:
 
 if __name__ == '__main__':
     packages = [
-        ('санный спорт', [1, 2]),
         ('SWM', [720, 1, 80, 25, 40]),
         ('RUN', [15000, 1, 75]),
         ('WLK', [9000, 1, 75, 180]),
@@ -163,7 +162,7 @@ if __name__ == '__main__':
     for workout_type, data in packages:
         training: Optional[Training] = read_package(workout_type, data)
 
-        if training:
-            main(training)
-        else:
+        if training is None:
             print('Unable to run main function')
+        else:
+            main(training)
